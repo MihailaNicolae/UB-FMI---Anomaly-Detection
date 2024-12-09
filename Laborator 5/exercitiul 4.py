@@ -3,34 +3,34 @@ import tensorflow as tf
 from tensorflow.keras import layers, Model
 import matplotlib.pyplot as plt
 
-# 1. Load the MNIST dataset
+# Setul de date
 (X_train, _), (X_test, _) = tf.keras.datasets.mnist.load_data()
 
-# Normalize the data to [0, 1] range
+# Normalizarea
 X_train = X_train / 255.0
 X_test = X_test / 255.0
 
-# Add a channel dimension (needed for Conv2D)
+# Adaugam canalul dimension ca sa mearga pe Conv2D
 X_train = np.expand_dims(X_train, axis=-1)
 X_test = np.expand_dims(X_test, axis=-1)
 
-# 2. Simulate anomalies by adding Gaussian noise
+# Generam anomalii (introducem zgomot)
 noise_factor = 0.35
 X_test_noisy = X_test + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=X_test.shape)
 X_test_noisy = np.clip(X_test_noisy, 0.0, 1.0)  # Keep pixel values in [0, 1]
 
 
-# 3. Build the Convolutional Autoencoder
+# Autoencoderul
 class ConvAutoencoder(Model):
     def __init__(self):
         super(ConvAutoencoder, self).__init__()
-        # Encoder: Compress the image
+        # Encoder
         self.encoder = tf.keras.Sequential([
             layers.Conv2D(8, (3, 3), activation='relu', padding='same', strides=2, input_shape=(28, 28, 1)),
             layers.Conv2D(4, (3, 3), activation='relu', padding='same', strides=2)
         ])
 
-        # Decoder: Reconstruct the image
+        # Decoder
         self.decoder = tf.keras.Sequential([
             layers.Conv2DTranspose(4, (3, 3), activation='relu', padding='same', strides=2),
             layers.Conv2DTranspose(8, (3, 3), activation='relu', padding='same', strides=2),
@@ -43,10 +43,8 @@ class ConvAutoencoder(Model):
         return decoded
 
 
-# Initialize the model
+# Initializam modelul
 autoencoder = ConvAutoencoder()
-
-# Compile the model
 autoencoder.compile(optimizer='adam', loss='mse')
 
 # Antrenam autoencoderul
